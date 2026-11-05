@@ -51,13 +51,13 @@ class Matrix[T](val rows: Int, val columns: Int, val data: List[T]):
     aux(candidatas, Nil)
 
   def partition(f: T => Boolean): (List[Position], List[Position]) = //Separamos todos los elementos de la matriz en dos listas dependiendo si cumplen f o no
-    @annotation.tailrec //Aunque recorramos toda la lista usamos "indice" para movernos para asi obtener las posiciones (X,Y) de cada elemento
+    @annotation.tailrec //Aunque recorramos toda la lista usamos "indice" para movernos para asi obtener las posiciones (X, Y) de cada elemento
     def aux(lista: List[T], indice: Int, cumplen: List[Position], noCumplen: List[Position]): (List[Position], List[Position]) = lista match
-      case head :: tail => val posicion = positionOf(indice) //Obetemos las (X,Y) del primer elemento en cada iteracion
-        if (f(head)) aux(tail, indice + 1, posicion :: cumplen, noCumplen) //Si (X,Y) cumple f, se añade al principio del acumulador Cumplen
-        else aux(tail, indice + 1, cumplen, posicion :: noCumplen) //Si (X,Y) no cumple f, se añade al principio del acumulador de NoCumplen
+      case head :: tail => val posicion = positionOf(indice) //Obtenemos las (X, Y) del primer elemento en cada iteración
+        if (f(head)) aux(tail, indice + 1, posicion :: cumplen, noCumplen) //Si (X, Y) cumple f, se añade al principio del acumulador Cumplen
+        else aux(tail, indice + 1, cumplen, posicion :: noCumplen) //Si (X, Y) no cumple f, se añade al principio del acumulador de NoCumplen
       case Nil => (cumplen.reverse, noCumplen.reverse)
-    aux(data, 0, Nil, Nil)  //Iniciamos aux con los datos de la matriz, indice = 0, y los acumuladores vacios
+    aux(data, 0, Nil, Nil)  //Iniciamos aux con los datos de la matriz, indice = 0, y los acumuladores vacíos
 
   def filterNeighbors(p: Position, f: T => Boolean): List[Position] =
     @annotation.tailrec
@@ -66,9 +66,25 @@ class Matrix[T](val rows: Int, val columns: Int, val data: List[T]):
       case Nil => acc.reverse
     aux(neighbors(p), Nil)
 
+object Matrix:
+  def apply[T](rows: Int, columns: Int, data: List[T]): Matrix[T] =
+    new Matrix(rows, columns, data)
+
   def apply[T](rows: Int, columns: Int, defaultValue: T): Matrix[T] =
     @annotation.tailrec
     def aux(n: Int, acc: List[T]): List[T] = if (n==0) acc else aux(n-1, defaultValue :: acc)
-    Matrix(rows, columns, aux(rows * columns, Nil))
+    new Matrix(rows, columns, aux(rows * columns, Nil))
 
-  def apply[T](rows: Int, columns: Int, defaultValue: T, marked: List[Position], markedValue: T): Matrix[T] = ??? //TODO
+  def apply[T](rows: Int, columns: Int, defaultValue: T, marked: List[Position], markedValue: T): Matrix[T] = {
+    @tailrec
+    def aux(i: Int, acc: List[T]): List[T] = {
+      if (i == rows * columns) {
+        acc.reverse
+      } else {
+        val pos = Position(i / columns, i % columns)
+        val comprobar = if (marked.contains(pos)) {markedValue} else {defaultValue}
+        aux(i + 1, comprobar :: acc)
+      }
+    }
+    new Matrix(rows, columns, aux(0, Nil))
+  } //TODO
