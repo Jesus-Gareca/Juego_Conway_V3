@@ -69,6 +69,11 @@ class Matrix[T](val rows: Int, val columns: Int, val data: List[T]):
   def apply[T](rows: Int, columns: Int, defaultValue: T): Matrix[T] =
     @annotation.tailrec
     def aux(n: Int, acc: List[T]): List[T] = if (n==0) acc else aux(n-1, defaultValue :: acc)
-    Matrix(rows, columns, aux(rows * columns, Nil))
+    new Matrix(rows, columns, aux(rows * columns, Nil))
 
-  def apply[T](rows: Int, columns: Int, defaultValue: T, marked: List[Position], markedValue: T): Matrix[T] = ??? //TODO
+  def apply[T](rows: Int, columns: Int, defaultValue: T, marked: List[Position], markedValue: T): Matrix[T] =
+    @annotation.tailrec
+    def aux(lista: List[Position], matriz: Matrix[T]): Matrix[T] = lista match
+      case head :: tail => aux(tail, matriz.update(head, markedValue))
+      case Nil => matriz
+    aux(marked, apply(rows, columns, defaultValue))
