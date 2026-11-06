@@ -3,7 +3,17 @@ import scala.math.Ordering.Implicits.infixOrderingOps
 
 class Game(val rows: Int, val columns: Int, val budget: Int, val maxGenerations: Int):
 
-    def initialState: State = ??? //TODO
+    def initialState: State = State(
+        boards = Map(
+            Player1 -> GameOfLifeMatrix(rows, columns),
+            Player2 -> GameOfLifeMatrix(rows, columns)
+        ),
+        remainingCells = Map(
+            Player1 -> budget,
+            Player2 -> budget
+        ),
+        turn = Player1
+    )
 
     def hasFinished(state: State, player: Player): Boolean = ??? //TODO
 
