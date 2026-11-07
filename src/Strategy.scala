@@ -12,19 +12,22 @@ case object ManualStrategy extends Strategy:
     println(state.boards(player).show(s"${playerName(player)} · te quedan ${state.remainingCells(player)} células"))
     println("Introducir fila y columna por separado :")
 
-    val line = StdIn.readLine()
-    if line == null then throw new RuntimeException("Se ha cerrado la entrada.")
+    def leerHastaPosicionValida(): Position = {
+      val line = StdIn.readLine()
+      if line == null then throw new RuntimeException("Se ha cerrado la entrada.")
 
-    val parts = line.trim.split("\\s+")
-    if parts.length != 2 then
-      println("Formato incorrecto. Introduce dos números: fila columna.")
-      choosePosition(state, player, Some("Formato incorrecto."))
-    else
-      (Try(parts(0).toInt), Try(parts(1).toInt)) match
-        case (scala.util.Success(row), scala.util.Success(column)) => Position(row, column)
-        case _ =>
-          println("Formato incorrecto. Debes introducir dos números enteros.")
-          choosePosition(state, player, Some("Formato incorrecto."))
+      val parts = line.trim.split("\\s+")
+      if parts.length != 2 then
+        println("Formato incorrecto. Introduce dos números: fila columna.")
+        leerHastaPosicionValida()
+      else
+        (Try(parts(0).toInt), Try(parts(1).toInt)) match
+          case (scala.util.Success(row), scala.util.Success(column)) => Position(row, column)
+          case _ =>
+            println("Formato incorrecto. Debes introducir dos números enteros.")
+            leerHastaPosicionValida()
+    }
+    leerHastaPosicionValida()
 
 case class AIStrategy(chosenPattern: List[Position]) extends Strategy:
   def choosePosition(state: State, player: Player, error: Option[String]): Position =
