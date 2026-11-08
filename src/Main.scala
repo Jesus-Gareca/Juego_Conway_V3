@@ -7,8 +7,17 @@ object Main extends App:
   val BoardSize      = 15
   val MaxGenerations = 1000
 
-    def readInt(prompt: String, min: Int, max: Int): Int = ??? //TODO
-
+    def readInt(prompt: String, min: Int, max: Int): Int =
+      @tailrec
+      def aux(): Int =
+        println(prompt)
+        Try(StdIn.readLine().toInt).toOption match
+          case Some(n) if n >= min && n <= max => n
+          case _ =>
+            println(s"Introduce un número entre $min y $max.")
+            aux()
+      aux()
+      
     def readHumanOrAI(prompt: String): Boolean = ??? //TODO
 
     def readYesNo(prompt: String): Boolean = ??? //TODO

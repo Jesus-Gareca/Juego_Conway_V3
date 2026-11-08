@@ -63,8 +63,36 @@ class Game(val rows: Int, val columns: Int, val budget: Int, val maxGenerations:
         aux(state, None)
     } //TODO
 
-    def simulate(board: GameOfLifeMatrix): (Int, Int) = ??? //TODO
+    // newBoard para definir la posicion de la sigueinte generacion
+    // Guardamos las posiciones anteriores con Set y comprobamos si currentBoard se repite
+    def simulate(board: GameOfLifeMatrix): (Int, Int) =
+        @tailrec
+        def loop(currentBoard: GameOfLifeMatrix, generation: Int, previousBoards: Set[GameOfLiveMatrix]): (Int, Int) =
+            val newBoard = currentBoard.nextGeneration
+            if (i + 1 >= maxGenerations || previousBoards.contains(newBoard))
+                (i + 1, newBoard.aliveCount)
+            else
+                loop(newBoard, i + 1, previousBoards + newBoard)
+        loop(board, 0, Set(board))        
 
-    def determineWinner(resultPlayer1: (Int, Int), resultPlayer2: (Int, Int)): Option[Player] = ??? //TODO
+    //Consideramos primero si los resultados son iguales, si son distintos quien tiene más generaciones
+    //Por último consideramos el número de células vivas como se menciona en las indicaciones
+    def determineWinner(resultPlayer1: (Int, Int), resultPlayer2: (Int, Int)): Option[Player] =
+        if (resultPlayer1 == resultPlayer2) None
+        else if (resultPlayer1._1 != resultPlayer2._1)
+            if (resultPlayer1._1 > resultPlayer2._1) Some(Player.Player1) else Some(Player.Player2)
+        else
+            if (resultPlayer1._2 > resultPlayer2._2) Some(Player.Player1) else Some(Player.Player2)
 
-    def play(strategies: Map[Player, Strategy]): GameResult = ??? //TODO
+    def play(strategies: Map[Player, Strategy]): GameResult =
+        val finalState = placementLoop(initialState, strategies)
+
+        val resultPlayer1 = simulate(finalState.boards(Player.Player1))
+        val resultPlayer2 = simulate(finalState.boards(Player.Player2))
+
+        val results = Map(
+            Player.Player1 -> resultPlayer1,
+            Player.Player2 -> resultPlayer2
+        )
+        val winner = determineWinner(resultPlayer1, resultPlayer2)
+        GameResult(finalState, results, winner)
