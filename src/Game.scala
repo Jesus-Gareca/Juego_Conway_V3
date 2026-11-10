@@ -5,7 +5,8 @@ import scala.math.Ordering.Implicits.infixOrderingOps
 import scala.annotation.tailrec
 
 class Game(val rows: Int, val columns: Int, val budget: Int, val maxGenerations: Int):
-
+    // Crea dos tableros vacíos uno por cada jugador, la cantidad de células
+    // disponibles para cada jugador y le da el turno inicial al jugador 1
     def initialState: State = State(
         boards = Map(
             Player.Player1 -> GameOfLifeMatrix.empty(rows, columns),
@@ -18,10 +19,17 @@ class Game(val rows: Int, val columns: Int, val budget: Int, val maxGenerations:
         turn = Player.Player1
     )
 
+    // Este método comprueba si al jugador le quedan o no células
     def hasFinished(state: State, player: Player): Boolean = {
         state.remainingCells(player) <= 0
     } //TODO
 
+    // Comprueba si se puede colocar la célula donde dice el jugador del turno,
+    // devuelve Left(mensaje) si falla, es decir, si no le quedan células, si la posición
+    // solicitada no está dentro del tablero o si ya hay una célula viva. Devuelve
+    // Right(nuevoEstado) si es una posición válida, además resta uno a las células
+    // restantes del jugador y pasa el turno al rival salvo que ya haya acabado el rival
+    // que entonces repite el jugador turno
     def placeCell(state: State, p: Position): Either[String, State] = {
         val jugador = state.turn
         val elOtro = otherPlayer(jugador)
@@ -45,14 +53,22 @@ class Game(val rows: Int, val columns: Int, val budget: Int, val maxGenerations:
         }
     } //TODO
 
+    //
     def placementLoop(state: State, strategies: Map[Player, Strategy]): State = {
         @tailrec
         def aux(state: State, error: Option[String]): State = {
+            // Este es el caso base donde ambos jugador han acabado y devuelve el estado final
             if (hasFinished(state, Player1) && hasFinished(state, Player2)) {
                 state
-            } else if (hasFinished(state, state.turn)) {
+            }
+            // Este caso es cuando solo un jugador acabó que pasa el turno al rival
+            else if (hasFinished(state, state.turn)) {
                 aux(state.copy(turn = otherPlayer(state.turn)), None)
-            } else {
+            }
+            // Este caso es el turno normal simplemente pide la posición deseada y ve si es
+            // válida o no, siendo que si es válida actualiza el estado y continua y si no manda el mensaje
+            // de error y repite
+            else {
                 val pos = strategies(state.turn).choosePosition(state, state.turn, error)
                 placeCell(state, pos) match {
                     case Right(nuevo) => aux(nuevo, None)
@@ -67,12 +83,12 @@ class Game(val rows: Int, val columns: Int, val budget: Int, val maxGenerations:
     // Guardamos las posiciones anteriores con Set y comprobamos si currentBoard se repite
     def simulate(board: GameOfLifeMatrix): (Int, Int) =
         @tailrec
-        def loop(currentBoard: GameOfLifeMatrix, generation: Int, previousBoards: Set[GameOfLiveMatrix]): (Int, Int) =
+        def loop(currentBoard: GameOfLifeMatrix, generation: Int, previousBoards: Set[GameOfLifeMatrix]): (Int, Int) =
             val newBoard = currentBoard.nextGeneration
-            if (i + 1 >= maxGenerations || previousBoards.contains(newBoard))
-                (i + 1, newBoard.aliveCount)
+            if (generation + 1 >= maxGenerations || previousBoards.contains(newBoard))
+                (generation + 1, newBoard.aliveCount)
             else
-                loop(newBoard, i + 1, previousBoards + newBoard)
+                loop(newBoard, generation + 1, previousBoards + newBoard)
         loop(board, 0, Set(board))        
 
     //Consideramos primero si los resultados son iguales, si son distintos quien tiene más generaciones
