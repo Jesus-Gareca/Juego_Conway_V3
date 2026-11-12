@@ -28,7 +28,7 @@ object Main extends App:
       readYesNo(prompt)
     } //TODO
 
-    // Lee e interpretauna respuesta tipo (s/n), acepta "s", "si" "sí", "n" y "no"
+    // Lee e interpreta una respuesta tipo (s/n), acepta "s", "si" "sí", "n" y "no"
     // cualquier otra cosa vuelve a preguntar
     def readYesNo(prompt: String): Boolean = {
       @tailrec
@@ -84,7 +84,7 @@ object Main extends App:
     val (generacion, celulasVivas) = resultado.results(p)
     println(s"${playerName(p)}: $generacion generaciones, $celulasVivas células vivas")
   }
-  // Muestra quién ha gandao y de que forma
+  // Muestra quién ha ganado y de que forma
   println(describeWinner(resultado))
   // Pregunta si quiere ver la animación de la partida
   if (readYesNo("¿Ver la animación generacion a generación? (s/n):")) {
